@@ -1,0 +1,10 @@
+Bonjour,
+
+
+Votre code de vérification AzurePath est : {{CODE}}
+
+
+Ce code expire dans 5 minutes. Ne le partagez pas.
+
+
+— L'équipe AzurePath
