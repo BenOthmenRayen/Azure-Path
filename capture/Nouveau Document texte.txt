@@ -1,0 +1,70 @@
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=stb@stb.com.tn  #hethi thot fi blasetha mail t3ek elli bech tb3eth bih
+spring.mail.password=dsmx zxid hlhp zlgk  #hethi thot feha lem ot de passe
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.protocol=smtp
+spring.mail.default-encoding=UTF-8
+logging.level.org.springframework.mail=DEBUG
+logging.level.org.springframework.boot.autoconfigure.mail=DEBUG
+
+
+
+#hetha el service elli nst3mel fih ena 
+ private void handleNotification(ErrorEvent event, String[] adminEmails) {
+        try {
+            String subjectPrefix;
+            String body;
+            File attachment = null;
+
+            String direction = generateSens(event.getSensOperation());
+
+            switch (event.getTypeError()) {
+                case "ERROR" -> {
+                    subjectPrefix = "Erreur";
+                    body = buildEmailBody(event, " Erreur de traitement d'un "+event.getBaseOperation(), "#d9534f", "❌");
+                    attachment = File.createTempFile("error-stacktrace-" + event.getIdOperation(), ".txt");
+                    try (FileWriter writer = new FileWriter(attachment)) {
+                        writer.write(event.getStackTrace());
+                    }
+                }
+                case "WARNING" -> {
+                    subjectPrefix = "Avertissement";
+                    body = buildEmailBodyWithoutException(event, "Avertissement", "#f7e36d", "⚠️");
+                }
+                case "INFO" -> {
+                    subjectPrefix = "Notification";
+                    body = buildEmailBodyWithoutException(event, "Notification", "#5bc0de", "\uD83D\uDCEC");
+                    if (event.getStackTrace() != null) {
+                        attachment = File.createTempFile("info-" + event.getIdOperation(), ".txt");
+                        try (FileWriter writer = new FileWriter(attachment)) {
+                            writer.write(event.getStackTrace());
+                        }
+                    }
+                }
+                default -> {
+                    System.out.println("Type non reconnu : " + event.getTypeError());
+                    return;
+                }
+            }
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom("stb@stb.com.tn");   # hne zeda lezmek thot el mail t3ek bech t5dem
+            helper.setTo(adminEmails);
+            helper.setSubject("%s - Station d’échange (%s)".formatted(subjectPrefix, direction));
+            helper.setText(body, true);
+
+            if (attachment != null) {
+                helper.addAttachment(attachment.getName(), attachment);
+                attachment.deleteOnExit();
+            }
+
+            mailSender.send(message);
+
+        } catch (Exception e) {
+            e.printStackTrace(); // Don't rethrow, allow Kafka listener to continue
+        }
+    }
