@@ -1,3 +1,27 @@
-firebase-service-account.json 
-backend/target/ 
-backend/src/main/resources/firebase-service-account.json 
+﻿# Firebase credentials - NEVER commit these
+firebase-service-account.json
+**/firebase-service-account.json
+
+# Java build artifacts
+backend/target/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+frontend/build/
+
+# Environment files
+.env
+.env.local
+.env.production
+**/.env
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
